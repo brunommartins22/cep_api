@@ -1,0 +1,1 @@
+%~dp0\cep_api-0.0.1-SNAPSHOT.exe uninstall
