@@ -19,15 +19,15 @@ import org.springframework.util.StringUtils;
  * @author Bruno Martins
  */
 @Service
+@Transactional
 public class GuiaService {
 
     @PersistenceContext(name = "default")
     private EntityManager em;
 
-    @Transactional
     public boolean updateGuiaByPago(BigDecimal numero) {
         //********************* VALIDATION **********************
-        
+
         if (!this.isHomologacao()) {
 
             throw new GuiaException("503-Serviço não disponivel para esta prefeitura, pois o ambiente encontra-se em produção!");
