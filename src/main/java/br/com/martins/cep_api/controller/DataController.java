@@ -76,7 +76,7 @@ public class DataController {
 
         }
 
-        hql.append("<h1>Que a força esteja com agente ©</h1>");
+        hql.append("<h1>Que a força esteja com a gente ©</h1>");
 
         hql.append("</center>");
 
