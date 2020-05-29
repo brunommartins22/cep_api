@@ -26,20 +26,49 @@ public class GuiaService {
 
     @Transactional
     public boolean updateGuiaByPago(BigDecimal numero) {
+        //********************* VALIDATION **********************
+        
+        if (!this.isHomologacao()) {
+
+            throw new GuiaException("503-Serviço não disponivel para esta prefeitura, pois o ambiente encontra-se em produção!");
+
+        }
 
         if (StringUtils.isEmpty(numero)) {
 
-            throw new GuiaException("400-Informe um numero para realização a transação!");
+            throw new GuiaException("400-Informe um número para realização a transação!");
 
         }
 
         if (numero.toString().length() > 17 || numero.toString().length() < 17) {
 
-            throw new GuiaException("400-Informe um numero válido com um total de 17 dígitos!");
+            throw new GuiaException("400-Informe um número válido com um total de 17 dígitos!");
 
         }
 
-        //********************* VALIDATION **********************
+        if (!this.isExistGuia(numero)) {
+
+            throw new GuiaException("404-Número da guia não encontrado na base de dados!");
+
+        }
+
+        //********************* UPDATE **************************
+        StringBuilder hql = new StringBuilder("UPDATE nfsd.fc_guia");
+
+        hql.append(" SET dt_pagamento = now(), en_situacao = 'PAGA'");
+
+        hql.append(" WHERE nu_guia = :numero ;");
+
+        Query query = this.em.createNativeQuery(hql.toString());
+
+        query.setParameter("numero", numero);
+
+        return query.executeUpdate() == 1;
+
+    }
+
+    public boolean isExistGuia(BigDecimal numero) {
+
         StringBuilder hql = new StringBuilder("SELECT 1 as exist FROM nfsd.fc_guia");
 
         hql.append(" WHERE nu_guia = :numero");
@@ -48,31 +77,25 @@ public class GuiaService {
 
         query.setParameter("numero", numero);
 
-        int resp = 0;
-        
-        if (!query.getResultList().isEmpty()) {
+        return !query.getResultList().isEmpty();
 
-            //********************* UPDATE **************************
-            hql = new StringBuilder("UPDATE nfsd.fc_guia");
+    }
 
-            hql.append(" SET dt_pagamento = now(), en_situacao = 'PAGA'");
+    public boolean isHomologacao() {
 
-            hql.append(" WHERE nu_guia = :numero ;");
+        StringBuilder hql = new StringBuilder("SELECT 1 as exist FROM nfsd.ge_parametro_sistema");
 
-            query = this.em.createNativeQuery(hql.toString());
+        hql.append(" WHERE no_parametro = :nome");
 
-            query.setParameter("numero", numero);
+        hql.append(" and tx_valor = :valor");
 
-            resp = query.executeUpdate();
+        Query query = this.em.createNativeQuery(hql.toString());
 
-        }else{
-            
-            throw new GuiaException("404-Número da guia não registrado na base de dados!");
-            
-        }
+        query.setParameter("nome", "AMBIENTE_HOMOLOGACAO");
 
-        return resp == 1;
+        query.setParameter("valor", "S");
 
+        return !query.getResultList().isEmpty();
     }
 
 }
