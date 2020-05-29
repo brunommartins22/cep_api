@@ -67,14 +67,16 @@ public class DataController {
         } else {
 
             hql.append("<h1 style=\"color:gray\"><b>").append("* QUE DECEPÇÃO EM * </3 </i>").append("</b></h1>");
-            
-             hql.append("<marquee direction=\"down\" width=\"100%\" height=\"200\" behavior=\"alternate\" style=\"border:solid\">\n"
+
+            hql.append("<marquee direction=\"down\" width=\"100%\" height=\"200\" behavior=\"alternate\" style=\"border:solid\">\n"
                     + "  <marquee behavior=\"alternate\">\n"
                     + "    <i style=\"color:RED \">MESMO ASSIM EU AINDA TE AMO LETÍCIA, TENTA DE NOVO!</i>\n"
                     + "  </marquee>\n"
                     + "</marquee>");
-            
+
         }
+
+        hql.append("<h1>Que a força esteja com agente ©</h1>");
 
         hql.append("</center>");
 
