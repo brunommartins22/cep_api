@@ -23,7 +23,7 @@ public class SecurityWebConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.csrf().disable().authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/api/ceps/{cep:.+}").permitAll()
                 .antMatchers("/api/guias/numero").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/guias/numero/{numero:.+}").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/guias/numero/{tipo}/{numero:.+}").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/datas/namoro/{data:.+}").permitAll()
                 .anyRequest().authenticated()
                 .and()

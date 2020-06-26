@@ -7,6 +7,7 @@ package br.com.martins.cep_api.service;
 
 import br.com.martins.cep_api.exception.GuiaException;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -25,7 +26,7 @@ public class GuiaService {
     @PersistenceContext(name = "default")
     private EntityManager em;
 
-    public boolean updateGuiaByPago(BigDecimal numero) {
+    public boolean updateGuiaByPago(boolean isNotaFiscal, BigDecimal numero) throws SQLException{
         //********************* VALIDATION **********************
 
         if (!this.isHomologacao()) {
@@ -63,11 +64,28 @@ public class GuiaService {
 
         query.setParameter("numero", numero);
 
-        return query.executeUpdate() == 1;
+       query.executeUpdate();
+
+        //************** Nota Fiscal/Escritura ******************
+        hql = new StringBuilder("UPDATE nfsd.fc_debito d");
+
+        hql.append(" SET en_situacao = (CASE WHEN en_situacao = 'RETIDO_DENTRO_MUNICIPIO_DEBITO' THEN 'RETIDO_DENTRO_MUNICIPIO_PAGO' ELSE 'PAGO' END)");
+
+        hql.append(" WHERE ").append(isNotaFiscal ? "d.id_origem" : "d.id_debito").append(" IN (SELECT ").append(isNotaFiscal ? "fd.id_origem" : "fd.id_debito").append(" FROM nfsd.fc_guia_debito gd JOIN nfsd.fc_guia g ON gd.id_guia = g.id_guia JOIN nfsd.fc_debito fd ON gd.id_debito = fd.id_debito WHERE g.nu_guia = :numero )");
+
+        hql.append(" AND d.en_origem = ").append(isNotaFiscal ? "'NOTA_FISCAL'" : "'ESCRITURA'").append(" ;");
+
+        query = this.em.createNativeQuery(hql.toString());
+
+        query.setParameter("numero", numero);
+
+        query.executeUpdate();
+
+        return true;
 
     }
 
-    public boolean isExistGuia(BigDecimal numero) {
+    public boolean isExistGuia(BigDecimal numero) throws SQLException{
 
         StringBuilder hql = new StringBuilder("SELECT 1 as exist FROM nfsd.fc_guia");
 
@@ -81,7 +99,7 @@ public class GuiaService {
 
     }
 
-    public boolean isHomologacao() {
+    public boolean isHomologacao() throws SQLException{
 
         StringBuilder hql = new StringBuilder("SELECT 1 as exist FROM nfsd.ge_parametro_sistema");
 
